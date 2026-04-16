@@ -14,6 +14,7 @@ Hatjitsu needs a modern foundation that can be deployed on Vercel without depend
 ## Capabilities
 
 ### New Capabilities
+
 - `room-lifecycle`: Create rooms, load room snapshots, and manage round state in Upstash Redis-backed session storage.
 - `anonymous-participation`: Let browsers join rooms without account creation while preserving participant identity and role state across reconnects.
 - `planning-rounds`: Support voting, vote hiding, reveal, reset, and card-pack selection for planning poker rounds.
