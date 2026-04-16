@@ -46,6 +46,7 @@ export function RoomClient({ roomId }: Props) {
   const [error, setError] = useState<string | null>(null);
   const [joinName, setJoinName] = useState('');
   const [profileName, setProfileName] = useState('');
+  const [linkCopied, setLinkCopied] = useState(false);
   const [connectionState, setConnectionState] = useState<'connecting' | 'live' | 'polling'>(
     'connecting',
   );
@@ -147,6 +148,18 @@ export function RoomClient({ roomId }: Props) {
       cleanup?.();
     };
   }, [realtime?.key, roomId, snapshot]);
+
+  useEffect(() => {
+    if (!linkCopied) {
+      return;
+    }
+
+    const timeout = window.setTimeout(() => {
+      setLinkCopied(false);
+    }, 2_000);
+
+    return () => window.clearTimeout(timeout);
+  }, [linkCopied]);
 
   async function joinRoom(role: 'voter' | 'observer') {
     setAction('join');
@@ -258,6 +271,16 @@ export function RoomClient({ roomId }: Props) {
     }
   }
 
+  async function copyRoomLink() {
+    try {
+      await navigator.clipboard.writeText(window.location.href);
+      setLinkCopied(true);
+      setError(null);
+    } catch {
+      setError('Could not copy the room link.');
+    }
+  }
+
   async function changeCardPack(cardPackId: string) {
     setAction('card-pack');
 
@@ -314,9 +337,10 @@ export function RoomClient({ roomId }: Props) {
           </div>
           <button
             className={styles['button-ghost']}
-            onClick={() => navigator.clipboard.writeText(window.location.href)}
+            onClick={() => void copyRoomLink()}
+            aria-live="polite"
           >
-            Copy room link
+            {linkCopied ? 'Copied room link' : 'Copy room link'}
           </button>
         </div>
         <p className={styles.lede}>

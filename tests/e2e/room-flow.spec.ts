@@ -1,5 +1,19 @@
 import { expect, test } from '@playwright/test';
 
+test('copy room link gives visible clipboard feedback', async ({ page }) => {
+  await page.context().grantPermissions(['clipboard-write']);
+
+  await page.goto('/');
+  await page.getByLabel('Create a room').fill('Alice');
+  await page.getByRole('button', { name: 'Create room' }).click();
+
+  await expect(page).toHaveURL(/\/room\/room_/);
+
+  await page.getByRole('button', { name: 'Copy room link' }).click();
+
+  await expect(page.getByRole('button', { name: 'Copied room link' })).toBeVisible();
+});
+
 test('single voter does not auto-reveal after voting', async ({ page }) => {
   await page.goto('/');
   await page.getByLabel('Create a room').fill('Alice');
