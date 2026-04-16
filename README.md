@@ -61,6 +61,10 @@ Optional realtime:
 - `ABLY_API_KEY`
 - `NEXT_PUBLIC_ABLY_KEY`
 
+Use local `.env.local` files only for local development overrides. Deployed
+configuration should live in Vercel environment variables, not in checked-in or
+lingering local `.env` files.
+
 ## Key Docs
 
 - [constitution.md](/Users/carlo/dev/hat.jit.su.2.0/constitution.md)

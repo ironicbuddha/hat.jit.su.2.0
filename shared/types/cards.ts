@@ -1,4 +1,4 @@
-export type CardPackId = 'fibonacci' | 'tshirt';
+export type CardPackId = 'fibonacci' | 'tshirt' | 'conseq';
 
 export type CardPack = {
   id: CardPackId;
@@ -10,12 +10,17 @@ export const CARD_PACKS: CardPack[] = [
   {
     id: 'fibonacci',
     label: 'Fibonacci',
-    cards: ['0', '1', '2', '3', '5', '8', '13', '21', '?'],
+    cards: ['0', '1', '2', '3', '5', '8', '13', '20', '40', '100', '?'],
   },
   {
     id: 'tshirt',
     label: 'T-Shirt',
     cards: ['XS', 'S', 'M', 'L', 'XL', '?'],
+  },
+  {
+    id: 'conseq',
+    label: 'Consecutive',
+    cards: ['1', '2', '3', '4', '5', '?'],
   },
 ];
 

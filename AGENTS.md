@@ -4,7 +4,7 @@ Work from the actual repo state. This is no longer a bootstrap-only repo.
 
 ## Current Reality
 
-- There is no Git root in the current directory.
+- This directory is now a Git repo on branch `main`.
 - The Next.js app, room APIs, and tests are implemented.
 - There is no active OpenSpec change in `openspec/changes/`.
 - The current source of truth for product requirements is `openspec/specs/`.
