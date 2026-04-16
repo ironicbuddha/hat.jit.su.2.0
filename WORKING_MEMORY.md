@@ -55,28 +55,25 @@ Last updated: 2026-04-16
 
 - Branch: `main`
 - Modified, uncommitted files:
-  - `README.md`
   - `next-env.d.ts`
-  - `shared/types/cards.ts`
 
 ## This Session
 
-- Provisioned Vercel project env vars for Upstash-backed deployment and
-  redeployed production.
-- Removed generated local `.env.local` and documented that deployed config
-  belongs in Vercel env vars.
-- Updated planning-round docs to match the implemented reveal behavior:
-  - a solo voter does not auto-reveal
-  - a multi-voter room auto-reveals when the final voter submits
-- Added unit and Playwright coverage for that reveal behavior.
-- Updated the card pack definitions:
-  - added `conseq` / Consecutive
-  - expanded Fibonacci to `0, 1, 2, 3, 5, 8, 13, 20, 40, 100, ?`
-- Ran verification after the card changes:
+- Fixed the deployed Upstash room read path so Vercel no longer fails after
+  room creation when Redis returns already-deserialized values.
+- Added a regression test for the Upstash adapter deserialization behavior.
+- Excluded `.env.example` from Vercel uploads with `.vercelignore` so the
+  production build no longer warns about `.env` files.
+- Added visible clipboard feedback for the room-link button:
+  - `Copy room link` changes to `Copied room link` after a successful copy
+  - the label resets automatically after a short delay
+- Added Playwright coverage for the copy-link feedback flow.
+- Pushed and deployed the above changes to GitHub and Vercel.
+- Ran verification for the deployed-fix and UX changes:
+  - `pnpm test -- --run tests/unit/upstash-room-store.test.ts tests/unit/room-service.test.ts`
   - `pnpm typecheck`
-  - `pnpm test`
-  - `pnpm test:e2e`
   - `pnpm build`
+  - `pnpm test:e2e -- tests/e2e/room-flow.spec.ts`
 
 ## Open Questions
 
@@ -95,5 +92,5 @@ Last updated: 2026-04-16
 
 ## Next Action
 
-- Review the three modified files, then commit and push the card-pack and
-  README cleanup changes from `main`.
+- Decide whether to keep or discard the generated `next-env.d.ts` dev import
+  change, then commit it only if the repo should track that Next.js 16 update.
