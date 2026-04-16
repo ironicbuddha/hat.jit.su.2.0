@@ -13,6 +13,14 @@ function roomKeys(roomId: string) {
   };
 }
 
+function parseStoredValue<T>(value: T | string): T {
+  if (typeof value === 'string') {
+    return JSON.parse(value) as T;
+  }
+
+  return value;
+}
+
 export class UpstashRoomStore implements RoomStore {
   constructor(
     private readonly redis: Redis,
@@ -59,10 +67,10 @@ export class UpstashRoomStore implements RoomStore {
     }
 
     return {
-      room: JSON.parse(room) as StoredRoomBundle['room'],
-      participants: JSON.parse(participants) as StoredRoomBundle['participants'],
-      round: JSON.parse(round) as StoredRoomBundle['round'],
-      votes: JSON.parse(votes) as StoredRoomBundle['votes'],
+      room: parseStoredValue<StoredRoomBundle['room']>(room),
+      participants: parseStoredValue<StoredRoomBundle['participants']>(participants),
+      round: parseStoredValue<StoredRoomBundle['round']>(round),
+      votes: parseStoredValue<StoredRoomBundle['votes']>(votes),
       revision: Number(revision),
     };
   }
