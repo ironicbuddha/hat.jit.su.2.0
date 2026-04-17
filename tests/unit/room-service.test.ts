@@ -54,7 +54,7 @@ describe('RoomService', () => {
 
     expect(hiddenSnapshot.votesSubmitted).toBe(1);
     expect(hiddenSnapshot.voterCount).toBe(1);
-    expect(hiddenSnapshot.participants[0]?.voteValue).toBeNull();
+    expect(hiddenSnapshot.participants[0]?.voteValue).toBe('5');
 
     const revealed = await service.reveal(created.bundle.room.id, created.participantId);
     const revealedSnapshot = toRoomSnapshot(revealed, guest.participantId);
@@ -62,6 +62,29 @@ describe('RoomService', () => {
     expect(revealedSnapshot.participants.find((participant) => participant.isHost)?.voteValue).toBe(
       '5',
     );
+  });
+
+  it('returns the current unrevealed vote only to the voter who cast it', async () => {
+    const service = createTestService();
+    const created = await service.createRoom('Alice');
+    const joined = await service.joinRoom({
+      roomId: created.bundle.room.id,
+      displayName: 'Bob',
+      role: 'voter',
+    });
+
+    const voted = await service.castVote(created.bundle.room.id, created.participantId, '5');
+    const selfSnapshot = toRoomSnapshot(voted, created.participantId);
+    const otherSnapshot = toRoomSnapshot(voted, joined.participantId);
+
+    expect(
+      selfSnapshot.participants.find((participant) => participant.id === created.participantId)
+        ?.voteValue,
+    ).toBe('5');
+    expect(
+      otherSnapshot.participants.find((participant) => participant.id === created.participantId)
+        ?.voteValue,
+    ).toBeNull();
   });
 
   it('resets rounds and clears votes when the host changes card packs', async () => {
@@ -97,7 +120,7 @@ describe('RoomService', () => {
     expect(snapshot.revealed).toBe(false);
     expect(
       snapshot.participants.find((participant) => participant.isSelf)?.voteValue,
-    ).toBeNull();
+    ).toBe('5');
   });
 
   it('auto-reveals once all voters in a multi-voter room have voted', async () => {

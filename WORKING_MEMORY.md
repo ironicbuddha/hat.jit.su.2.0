@@ -1,6 +1,6 @@
 # Working Memory
 
-Last updated: 2026-04-16
+Last updated: 2026-04-17
 
 ## Repo Status
 
@@ -16,6 +16,7 @@ Last updated: 2026-04-16
   - cookie-backed anonymous participant identity
   - voter and observer roles
   - vote, clear, reveal, reset, and card-pack flows
+  - self-visible unrevealed vote selection for the current voter
   - memory store for local/test and Upstash for deployment
   - Ably-backed publish interface with polling fallback on the client
   - three card packs:
@@ -55,6 +56,7 @@ Last updated: 2026-04-16
 
 - Branch: `main`
 - Modified, uncommitted files:
+  - selected-vote affordance and spec-sync changes
   - `next-env.d.ts`
 
 ## This Session
@@ -68,6 +70,12 @@ Last updated: 2026-04-16
   - `Copy room link` changes to `Copied room link` after a successful copy
   - the label resets automatically after a short delay
 - Added Playwright coverage for the copy-link feedback flow.
+- Added self-visible unrevealed vote selection in room snapshots so a voter can
+  see and change their current choice until reveal.
+- Added selected-card styling and guidance copy in the room voting UI.
+- Added unit and Playwright coverage for the self-visible vote affordance.
+- Synced the `planning-rounds` main spec with the self-visible unrevealed vote
+  requirement and archived the completed OpenSpec change.
 - Pushed and deployed the above changes to GitHub and Vercel.
 - Ran verification for the deployed-fix and UX changes:
   - `pnpm test -- --run tests/unit/upstash-room-store.test.ts tests/unit/room-service.test.ts`

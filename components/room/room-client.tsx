@@ -58,6 +58,7 @@ export function RoomClient({ roomId }: Props) {
 
   const isHost = Boolean(self?.isHost);
   const needsJoin = !self;
+  const selectedVote = self?.voteValue ?? null;
 
   const refreshRoom = useEffectEvent(async () => {
     setLoading((current) => current && !snapshot);
@@ -466,14 +467,21 @@ export function RoomClient({ roomId }: Props) {
 
             <section className={styles.card}>
               <h2 className={styles['section-title']}>Votes</h2>
+              <p className={styles.hint}>
+                Your current pick stays highlighted until the round reveals. Tap another card to
+                change your vote.
+              </p>
               <div className={styles['card-grid']}>
                 {snapshot.availableCards.map((card) => (
                   <button
                     className={`${styles['card-button']} ${
                       snapshot.revealed
                         ? styles['card-button-inactive']
+                        : selectedVote === card
+                          ? styles['card-button-selected']
                         : styles['card-button-active']
                     }`}
+                    aria-pressed={selectedVote === card}
                     disabled={action !== null || self?.role !== 'voter' || snapshot.revealed}
                     key={card}
                     onClick={() => void castVote(card)}

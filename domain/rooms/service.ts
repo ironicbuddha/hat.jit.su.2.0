@@ -69,7 +69,10 @@ function buildSnapshot(
       isHost: participant.id === bundle.room.hostParticipantId,
       isSelf: participant.id === selfParticipantId,
       hasVoted: voteMap.has(participant.id),
-      voteValue: revealed ? voteMap.get(participant.id) ?? null : null,
+      voteValue:
+        revealed || participant.id === selfParticipantId
+          ? voteMap.get(participant.id) ?? null
+          : null,
     }),
   );
 

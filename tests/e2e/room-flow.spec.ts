@@ -21,16 +21,29 @@ test('single voter does not auto-reveal after voting', async ({ page }) => {
 
   await expect(page).toHaveURL(/\/room\/room_/);
   await expect(page.getByText('Alice (you) • host')).toBeVisible();
+  await expect(
+    page.getByText('Your current pick stays highlighted until the round reveals.'),
+  ).toBeVisible();
 
-  await page.getByRole('button', { name: '5' }).click();
+  const voteFive = page.getByRole('button', { name: '5', exact: true });
+  const voteEight = page.getByRole('button', { name: '8', exact: true });
+
+  await voteFive.click();
 
   await expect(page.getByText('1/1 votes in')).toBeVisible();
+  await expect(voteFive).toHaveAttribute('aria-pressed', 'true');
+  await expect(voteEight).toHaveAttribute('aria-pressed', 'false');
   await expect(page.locator('article').filter({ hasText: 'Alice (you) • host' })).toContainText(
     '•••',
   );
   await expect(page.locator('article').filter({ hasText: 'Alice (you) • host' })).not.toContainText(
     '5',
   );
+
+  await voteEight.click();
+
+  await expect(voteEight).toHaveAttribute('aria-pressed', 'true');
+  await expect(voteFive).toHaveAttribute('aria-pressed', 'false');
 });
 
 test('multi-voter room auto-reveals after the final vote', async ({ browser, page }) => {
