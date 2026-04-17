@@ -57,9 +57,6 @@ export function RoomClient({ roomId }: Props) {
   const [joinName, setJoinName] = useState('');
   const [profileName, setProfileName] = useState('');
   const [linkCopied, setLinkCopied] = useState(false);
-  const [connectionState, setConnectionState] = useState<
-    'connecting' | 'live' | 'polling'
-  >('connecting');
 
   const self = useMemo(
     () =>
@@ -85,9 +82,6 @@ export function RoomClient({ roomId }: Props) {
 
         return current || selfName;
       });
-      setConnectionState(
-        data.realtime.provider === 'ably' ? 'live' : 'polling',
-      );
       setError(null);
     } catch (caughtError) {
       setError(
@@ -152,7 +146,6 @@ export function RoomClient({ roomId }: Props) {
           client.close();
         };
       } catch {
-        setConnectionState('polling');
         return undefined;
       }
     }
@@ -365,10 +358,12 @@ export function RoomClient({ roomId }: Props) {
   if (loading && !snapshot) {
     return (
       <main className={styles.shell}>
-        <section className={styles.hero}>
-          <p className={styles.eyebrow}>Loading room</p>
-          <h1 className={styles.title}>Syncing the current snapshot…</h1>
-        </section>
+        <header className={styles.hero}>
+          <div className={styles['hero-inner']}>
+            <p className={styles.eyebrow}>Loading room</p>
+            <h1 className={styles.title}>Syncing…</h1>
+          </div>
+        </header>
       </main>
     );
   }
@@ -376,244 +371,257 @@ export function RoomClient({ roomId }: Props) {
   if (!snapshot) {
     return (
       <main className={styles.shell}>
-        <section className={styles.hero}>
-          <p className={styles.eyebrow}>Room unavailable</p>
-          <h1 className={styles.title}>This room could not be loaded.</h1>
-          <p className={styles.lede}>{error ?? 'The room may have expired.'}</p>
-          <button
-            className={styles['button-ghost']}
-            onClick={() => router.push('/')}
-          >
-            Back to lobby
-          </button>
-        </section>
+        <header className={styles.hero}>
+          <div className={styles['hero-inner']}>
+            <p className={styles.eyebrow}>Room unavailable</p>
+            <h1 className={styles.title}>This room could not be loaded.</h1>
+            <p className={styles.lede}>{error ?? 'The room may have expired.'}</p>
+            <div className={styles['button-row']} style={{ marginTop: '24px' }}>
+              <button
+                className={styles['copy-button']}
+                onClick={() => router.push('/')}
+              >
+                Back to lobby
+              </button>
+            </div>
+          </div>
+        </header>
       </main>
     );
   }
 
   return (
     <main className={styles.shell}>
-      <section className={styles.hero}>
-        <div className={styles['hero-header']}>
-          <div>
-            <p className={styles.eyebrow}>Collaborative room</p>
-            <h1 className={styles.title}>{snapshot.roomId}</h1>
+      <header className={styles.hero}>
+        <div className={styles['hero-inner']}>
+          <div className={styles['hero-header']}>
+            <div>
+              <p className={styles.eyebrow}>Collaborative room</p>
+              <h1 className={styles.title}>{snapshot.roomId}</h1>
+            </div>
+            <button
+              className={styles['copy-button']}
+              onClick={() => void copyRoomLink()}
+              aria-live="polite"
+            >
+              {linkCopied ? 'Copied' : 'Copy link'}
+            </button>
           </div>
-          <button
-            className={styles['button-ghost']}
-            onClick={() => void copyRoomLink()}
-            aria-live="polite"
-          >
-            {linkCopied ? 'Copied room link' : 'Copy room link'}
-          </button>
+          <div className={styles['status-bar']}>
+            <span className={styles.pill}>
+              {snapshot.votesSubmitted}/{snapshot.voterCount} votes in
+            </span>
+            <span className={styles.pill}>
+              Card pack: {snapshot.cardPackId}
+            </span>
+          </div>
         </div>
-        {/*<p className={styles.lede}>
-          Shared room state is authoritative. This page refreshes on poll, on
-          visibility changes, and on managed realtime events when Ably is configured.
-        </p>*/}
-        <div className={styles['status-bar']}>
-          {/*<span className={styles.pill}>Revision {snapshot.revision}</span>*/}
-          <span className={styles.pill}>
-            {snapshot.votesSubmitted}/{snapshot.voterCount} votes in
-          </span>
-          <span className={styles.pill}>Card pack: {snapshot.cardPackId}</span>
-          {/*<span className={styles.pill}>
-            Connection:{' '}
-            {connectionState === 'live' ? 'live updates' : 'polling'}
-          </span>*/}
-        </div>
+      </header>
+
+      <div className={styles.content}>
         {error ? (
           <p className={styles.error} role="alert">
             {error}
           </p>
         ) : null}
-      </section>
 
-      {needsJoin ? (
-        <section className={styles.card}>
-          <h2 className={styles['section-title']}>Join this room</h2>
-          <div className={styles['field-row']}>
-            <label className={styles.label} htmlFor="join-name">
-              Display name
-            </label>
-            <input
-              id="join-name"
-              className={styles.input}
-              value={joinName}
-              onChange={(event) => setJoinName(event.target.value)}
-              placeholder="Guest"
-            />
-          </div>
-          <div className={styles['button-row']}>
-            <button
-              className={styles.button}
-              disabled={action !== null}
-              onClick={() => void joinRoom('voter')}
-            >
-              {action === 'join' ? 'Joining…' : 'Join as voter'}
-            </button>
-            <button
-              className={styles['button-ghost']}
-              disabled={action !== null}
-              onClick={() => void joinRoom('observer')}
-            >
-              Join as observer
-            </button>
-          </div>
-        </section>
-      ) : (
-        <div className={styles.grid}>
+        {needsJoin ? (
           <section className={styles.card}>
-            <h2 className={styles['section-title']}>Participants</h2>
-            <div className={styles.participants}>
-              {snapshot.participants.map((participant) => (
-                <article className={styles.participant} key={participant.id}>
-                  <div className={styles['participant-meta']}>
-                    <span className={styles['participant-name']}>
-                      {participant.displayName}
-                      {participant.isSelf ? ' (you)' : ''}
-                      {participant.isHost ? ' • host' : ''}
-                    </span>
-                    <span className={styles['participant-subtle']}>
-                      {participant.role} ·{' '}
-                      {participant.hasVoted ? 'vote in' : 'waiting'}
-                    </span>
-                  </div>
-                  <span className={styles['vote-badge']}>
-                    {snapshot.revealed
-                      ? (participant.voteValue ?? '—')
-                      : participant.hasVoted
-                        ? '•••'
-                        : '—'}
-                  </span>
-                </article>
-              ))}
+            <h2 className={styles['section-title']}>Join this room</h2>
+            <div className={styles['field-row']}>
+              <label className={styles.label} htmlFor="join-name">
+                Display name
+              </label>
+              <input
+                id="join-name"
+                className={styles.input}
+                value={joinName}
+                onChange={(event) => setJoinName(event.target.value)}
+                placeholder="Guest"
+              />
+            </div>
+            <div className={styles['button-row']}>
+              <button
+                className={styles.button}
+                disabled={action !== null}
+                onClick={() => void joinRoom('voter')}
+              >
+                {action === 'join' ? 'Joining…' : 'Join as voter'}
+              </button>
+              <button
+                className={styles['button-ghost']}
+                disabled={action !== null}
+                onClick={() => void joinRoom('observer')}
+              >
+                Join as observer
+              </button>
             </div>
           </section>
-
-          <section className={styles.controls}>
+        ) : (
+          <div className={styles.grid}>
             <section className={styles.card}>
-              <h2 className={styles['section-title']}>Your profile</h2>
-              <div className={styles['field-row']}>
-                <label className={styles.label} htmlFor="profile-name">
-                  Display name
-                </label>
-                <input
-                  id="profile-name"
-                  className={styles.input}
-                  value={profileName}
-                  onChange={(event) => setProfileName(event.target.value)}
-                />
-              </div>
-              <div className={styles['button-row']}>
-                <button
-                  className={styles.button}
-                  disabled={action !== null}
-                  onClick={() => void updateProfile()}
-                >
-                  Save name
-                </button>
-                <button
-                  className={styles['button-ghost']}
-                  disabled={action !== null || self?.role === 'voter'}
-                  onClick={() => void updateProfile('voter')}
-                >
-                  Become voter
-                </button>
-                <button
-                  className={styles['button-ghost']}
-                  disabled={action !== null || self?.role === 'observer'}
-                  onClick={() => void updateProfile('observer')}
-                >
-                  Become observer
-                </button>
+              <h2 className={styles['section-title']}>Participants</h2>
+              <div className={styles.participants}>
+                {snapshot.participants.map((participant) => (
+                  <article
+                    className={styles.participant}
+                    key={participant.id}
+                  >
+                    <div className={styles['participant-meta']}>
+                      <span className={styles['participant-name']}>
+                        {participant.displayName}
+                        {participant.isSelf ? ' (you)' : ''}
+                        {participant.isHost ? ' · host' : ''}
+                      </span>
+                      <span className={styles['participant-subtle']}>
+                        {participant.role} ·{' '}
+                        {participant.hasVoted ? 'vote in' : 'waiting'}
+                      </span>
+                    </div>
+                    <span
+                      className={`${styles['vote-badge']} ${
+                        !snapshot.revealed && !participant.hasVoted
+                          ? styles['vote-badge-empty']
+                          : ''
+                      }`}
+                    >
+                      {snapshot.revealed
+                        ? (participant.voteValue ?? '—')
+                        : participant.hasVoted
+                          ? '•••'
+                          : '—'}
+                    </span>
+                  </article>
+                ))}
               </div>
             </section>
 
-            <section className={styles.card}>
-              <h2 className={styles['section-title']}>Votes</h2>
-              <p className={styles.hint}>
-                Your current pick stays highlighted until the round reveals. Tap
-                another card to change your vote.
-              </p>
-              <div className={styles['card-grid']}>
-                {snapshot.availableCards.map((card) => (
+            <section className={styles.controls}>
+              <section className={styles.card}>
+                <h2 className={styles['section-title']}>Your profile</h2>
+                <div className={styles['field-row']}>
+                  <label className={styles.label} htmlFor="profile-name">
+                    Display name
+                  </label>
+                  <input
+                    id="profile-name"
+                    className={styles.input}
+                    value={profileName}
+                    onChange={(event) => setProfileName(event.target.value)}
+                  />
+                </div>
+                <div className={styles['button-row']}>
                   <button
-                    className={`${styles['card-button']} ${
-                      snapshot.revealed
-                        ? styles['card-button-inactive']
-                        : selectedVote === card
-                          ? styles['card-button-selected']
-                          : styles['card-button-active']
-                    }`}
-                    aria-pressed={selectedVote === card}
+                    className={styles.button}
+                    disabled={action !== null}
+                    onClick={() => void updateProfile()}
+                  >
+                    Save name
+                  </button>
+                  <button
+                    className={styles['button-ghost']}
+                    disabled={action !== null || self?.role === 'voter'}
+                    onClick={() => void updateProfile('voter')}
+                  >
+                    Become voter
+                  </button>
+                  <button
+                    className={styles['button-ghost']}
+                    disabled={action !== null || self?.role === 'observer'}
+                    onClick={() => void updateProfile('observer')}
+                  >
+                    Become observer
+                  </button>
+                </div>
+              </section>
+
+              <section className={styles.card}>
+                <h2 className={styles['section-title']}>Votes</h2>
+                <p className={styles.hint}>
+                  Your current pick stays highlighted until the round reveals.
+                  Tap another card to change your vote.
+                </p>
+                <div className={styles['card-grid']}>
+                  {snapshot.availableCards.map((card) => (
+                    <button
+                      className={`${styles['card-button']} ${
+                        snapshot.revealed
+                          ? styles['card-button-inactive']
+                          : selectedVote === card
+                            ? styles['card-button-selected']
+                            : styles['card-button-active']
+                      }`}
+                      aria-pressed={selectedVote === card}
+                      disabled={
+                        action !== null ||
+                        self?.role !== 'voter' ||
+                        snapshot.revealed
+                      }
+                      key={card}
+                      onClick={() => void castVote(card)}
+                    >
+                      {card}
+                    </button>
+                  ))}
+                </div>
+                <div className={styles['button-row']}>
+                  <button
+                    className={styles['button-ghost']}
                     disabled={
                       action !== null ||
                       self?.role !== 'voter' ||
                       snapshot.revealed
                     }
-                    key={card}
-                    onClick={() => void castVote(card)}
+                    onClick={() => void clearVote()}
                   >
-                    {card}
+                    Clear vote
                   </button>
-                ))}
-              </div>
-              <div className={styles['button-row']}>
-                <button
-                  className={styles['button-ghost']}
-                  disabled={
-                    action !== null ||
-                    self?.role !== 'voter' ||
-                    snapshot.revealed
-                  }
-                  onClick={() => void clearVote()}
-                >
-                  Clear vote
-                </button>
-              </div>
-            </section>
+                </div>
+              </section>
 
-            <section className={styles.card}>
-              <h2 className={styles['section-title']}>Host controls</h2>
-              <div className={styles['field-row']}>
-                <label className={styles.label} htmlFor="card-pack">
-                  Card pack
-                </label>
-                <select
-                  id="card-pack"
-                  className={styles.select}
-                  disabled={!isHost || action !== null}
-                  onChange={(event) => void changeCardPack(event.target.value)}
-                  value={snapshot.cardPackId}
-                >
-                  {CARD_PACKS.map((pack) => (
-                    <option key={pack.id} value={pack.id}>
-                      {pack.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className={styles['button-row']}>
-                <button
-                  className={styles.button}
-                  disabled={!isHost || action !== null}
-                  onClick={() => void reveal()}
-                >
-                  Reveal votes
-                </button>
-                <button
-                  className={styles['button-ghost']}
-                  disabled={!isHost || action !== null}
-                  onClick={() => void resetRound()}
-                >
-                  Reset round
-                </button>
-              </div>
+              <section className={styles.card}>
+                <h2 className={styles['section-title']}>Host controls</h2>
+                <div className={styles['field-row']}>
+                  <label className={styles.label} htmlFor="card-pack">
+                    Card pack
+                  </label>
+                  <select
+                    id="card-pack"
+                    className={styles.select}
+                    disabled={!isHost || action !== null}
+                    onChange={(event) =>
+                      void changeCardPack(event.target.value)
+                    }
+                    value={snapshot.cardPackId}
+                  >
+                    {CARD_PACKS.map((pack) => (
+                      <option key={pack.id} value={pack.id}>
+                        {pack.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div className={styles['button-row']}>
+                  <button
+                    className={styles.button}
+                    disabled={!isHost || action !== null}
+                    onClick={() => void reveal()}
+                  >
+                    Reveal votes
+                  </button>
+                  <button
+                    className={styles['button-ghost']}
+                    disabled={!isHost || action !== null}
+                    onClick={() => void resetRound()}
+                  >
+                    Reset round
+                  </button>
+                </div>
+              </section>
             </section>
-          </section>
-        </div>
-      )}
+          </div>
+        )}
+      </div>
     </main>
   );
 }

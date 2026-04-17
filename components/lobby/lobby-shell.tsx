@@ -3,6 +3,8 @@
 import { useRouter } from 'next/navigation';
 import { startTransition, useState } from 'react';
 
+import styles from './lobby-shell.module.css';
+
 type CreateRoomResponse = {
   snapshot: {
     roomId: string;
@@ -27,7 +29,9 @@ export function LobbyShell() {
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({ displayName: hostName }),
       });
-      const data = (await response.json()) as CreateRoomResponse & { error?: string };
+      const data = (await response.json()) as CreateRoomResponse & {
+        error?: string;
+      };
 
       if (!response.ok) {
         throw new Error(data.error ?? 'Could not create a room.');
@@ -37,7 +41,11 @@ export function LobbyShell() {
         router.push(`/room/${data.snapshot.roomId}`);
       });
     } catch (caughtError) {
-      setError(caughtError instanceof Error ? caughtError.message : 'Could not create a room.');
+      setError(
+        caughtError instanceof Error
+          ? caughtError.message
+          : 'Could not create a room.',
+      );
     } finally {
       setSubmitting(null);
     }
@@ -70,7 +78,11 @@ export function LobbyShell() {
         router.push(`/room/${roomId}`);
       });
     } catch (caughtError) {
-      setError(caughtError instanceof Error ? caughtError.message : 'Could not join that room.');
+      setError(
+        caughtError instanceof Error
+          ? caughtError.message
+          : 'Could not join that room.',
+      );
     } finally {
       setSubmitting(null);
     }
@@ -78,88 +90,48 @@ export function LobbyShell() {
 
   return (
     <div>
-      <div style={{ display: 'grid', gap: '1rem', marginTop: '2rem' }}>
-        <div
-          style={{
-            display: 'grid',
-            gap: '0.75rem',
-            padding: '1rem',
-            border: '1px solid rgb(29 26 23 / 12%)',
-            borderRadius: '24px',
-            background: 'rgb(255 255 255 / 64%)',
-          }}
-        >
-          <label htmlFor="host-name">Create a room</label>
+      <div className={styles.grid}>
+        <div className={styles.panel}>
+          <label className={styles['panel-label']} htmlFor="host-name">
+            Create a room
+          </label>
           <input
+            className={styles.input}
             id="host-name"
             value={hostName}
             onChange={(event) => setHostName(event.target.value)}
             placeholder="Your display name"
-            style={{
-              padding: '0.85rem 1rem',
-              borderRadius: '999px',
-              border: '1px solid rgb(29 26 23 / 18%)',
-              background: 'white',
-            }}
           />
           <button
+            className={styles['btn-primary']}
             disabled={submitting !== null}
             onClick={createRoom}
-            style={{
-              padding: '0.9rem 1rem',
-              borderRadius: '999px',
-              border: 'none',
-              background: '#d64f2a',
-              color: 'white',
-            }}
           >
             {submitting === 'create' ? 'Creating…' : 'Create room'}
           </button>
         </div>
 
-        <div
-          style={{
-            display: 'grid',
-            gap: '0.75rem',
-            padding: '1rem',
-            border: '1px solid rgb(29 26 23 / 12%)',
-            borderRadius: '24px',
-            background: 'rgb(255 255 255 / 64%)',
-          }}
-        >
-          <label htmlFor="room-id">Join an existing room</label>
+        <div className={styles.panel}>
+          <label className={styles['panel-label']} htmlFor="room-id">
+            Join a room
+          </label>
           <input
+            className={styles.input}
             id="room-id"
             value={joinRoomId}
             onChange={(event) => setJoinRoomId(event.target.value)}
-            placeholder="room_xxxxx"
-            style={{
-              padding: '0.85rem 1rem',
-              borderRadius: '999px',
-              border: '1px solid rgb(29 26 23 / 18%)',
-              background: 'white',
-            }}
+            placeholder="Room code"
           />
           <input
+            className={styles.input}
             value={joinName}
             onChange={(event) => setJoinName(event.target.value)}
             placeholder="Your display name"
-            style={{
-              padding: '0.85rem 1rem',
-              borderRadius: '999px',
-              border: '1px solid rgb(29 26 23 / 18%)',
-              background: 'white',
-            }}
           />
           <button
+            className={styles['btn-secondary']}
             disabled={submitting !== null}
             onClick={joinRoom}
-            style={{
-              padding: '0.9rem 1rem',
-              borderRadius: '999px',
-              border: '1px solid rgb(29 26 23 / 12%)',
-              background: 'white',
-            }}
           >
             {submitting === 'join' ? 'Joining…' : 'Join room'}
           </button>
@@ -167,7 +139,7 @@ export function LobbyShell() {
       </div>
 
       {error ? (
-        <p style={{ marginTop: '1rem', color: '#a33114' }} role="alert">
+        <p className={styles.error} role="alert">
           {error}
         </p>
       ) : null}

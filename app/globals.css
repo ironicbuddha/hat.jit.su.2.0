@@ -1,13 +1,14 @@
 :root {
-  --bg: #f2efe8;
-  --surface: rgb(255 252 245 / 78%);
-  --surface-strong: rgb(255 252 245 / 92%);
-  --ink: #1d1a17;
-  --muted: #61574c;
-  --line: rgb(29 26 23 / 12%);
-  --accent: #d64f2a;
-  --accent-strong: #a33114;
-  --shadow: 0 24px 80px rgb(61 41 18 / 12%);
+  --dark: #191c1f;
+  --white: #fff;
+  --surface: #f4f4f4;
+  --blue: #494fdf;
+  --teal: #00a87e;
+  --danger: #e23b4a;
+  --warning: #ec7e00;
+  --mid-slate: #505a63;
+  --cool-gray: #8d969e;
+  --border: #c9c9cd;
 }
 
 * {
@@ -22,11 +23,12 @@ html {
 
 body {
   min-height: 100vh;
-  color: var(--ink);
-  background:
-    radial-gradient(circle at top, rgb(214 79 42 / 18%), transparent 32%),
-    linear-gradient(180deg, #fbf6eb 0%, #f2efe8 54%, #ece7de 100%);
-  font-family: var(--font-mono), monospace;
+  color: var(--dark);
+  background: var(--white);
+  font-family: var(--font-body), Inter, sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+  letter-spacing: 0.24px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -37,7 +39,8 @@ a {
 }
 
 button,
-input {
+input,
+select {
   font: inherit;
 }
 
@@ -46,5 +49,5 @@ button {
 }
 
 ::selection {
-  background: rgb(214 79 42 / 24%);
+  background: rgb(73 79 223 / 20%);
 }

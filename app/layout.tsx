@@ -1,16 +1,18 @@
 import type { Metadata } from 'next';
-import { Fraunces, JetBrains_Mono } from 'next/font/google';
+import { DM_Sans, Inter } from 'next/font/google';
 
 import './globals.css';
 
-const display = Fraunces({
+const display = DM_Sans({
   subsets: ['latin'],
   variable: '--font-display',
+  weight: ['400', '500', '600'],
 });
 
-const mono = JetBrains_Mono({
+const body = Inter({
   subsets: ['latin'],
-  variable: '--font-mono',
+  variable: '--font-body',
+  weight: ['400', '500', '600', '700'],
 });
 
 export const metadata: Metadata = {
@@ -24,7 +26,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${display.variable} ${mono.variable}`}>
+    <html lang="en" className={`${display.variable} ${body.variable}`}>
       <body>{children}</body>
     </html>
   );

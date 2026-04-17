@@ -1,0 +1,59 @@
+- generic [active] [ref=e1]:
+  - button "Open Next.js Dev Tools" [ref=e27] [cursor=pointer]:
+    - img [ref=e28]
+  - alert [ref=e21]
+  - main [ref=e31]:
+    - generic [ref=e33]:
+      - generic [ref=e34]:
+        - generic [ref=e35]:
+          - paragraph [ref=e36]: Collaborative room
+          - heading "room_7d7d95b9b7" [level=1] [ref=e37]
+        - button "Copy link" [ref=e38] [cursor=pointer]
+      - generic [ref=e39]:
+        - generic [ref=e40]: 0/1 votes in
+        - generic [ref=e41]: "Card pack: fibonacci"
+    - generic [ref=e43]:
+      - generic [ref=e44]:
+        - heading "Participants" [level=2] [ref=e45]
+        - article [ref=e47]:
+          - generic [ref=e48]:
+            - generic [ref=e49]: Car (you) · host
+            - generic [ref=e50]: voter · waiting
+          - generic [ref=e51]: —
+      - generic [ref=e52]:
+        - generic [ref=e53]:
+          - heading "Your profile" [level=2] [ref=e54]
+          - generic [ref=e55]:
+            - generic [ref=e56]: Display name
+            - textbox "Display name" [ref=e57]: Car
+          - generic [ref=e58]:
+            - button "Save name" [ref=e59] [cursor=pointer]
+            - button "Become voter" [disabled] [ref=e60]
+            - button "Become observer" [ref=e61] [cursor=pointer]
+        - generic [ref=e62]:
+          - heading "Votes" [level=2] [ref=e63]
+          - paragraph [ref=e64]: Your current pick stays highlighted until the round reveals. Tap another card to change your vote.
+          - generic [ref=e65]:
+            - button "0" [ref=e66] [cursor=pointer]
+            - button "1" [ref=e67] [cursor=pointer]
+            - button "2" [ref=e68] [cursor=pointer]
+            - button "3" [ref=e69] [cursor=pointer]
+            - button "5" [ref=e70] [cursor=pointer]
+            - button "8" [ref=e71] [cursor=pointer]
+            - button "13" [ref=e72] [cursor=pointer]
+            - button "20" [ref=e73] [cursor=pointer]
+            - button "40" [ref=e74] [cursor=pointer]
+            - button "100" [ref=e75] [cursor=pointer]
+            - button "?" [ref=e76] [cursor=pointer]
+          - button "Clear vote" [ref=e78] [cursor=pointer]
+        - generic [ref=e79]:
+          - heading "Host controls" [level=2] [ref=e80]
+          - generic [ref=e81]:
+            - generic [ref=e82]: Card pack
+            - combobox "Card pack" [ref=e83] [cursor=pointer]:
+              - option "Fibonacci" [selected]
+              - option "T-Shirt"
+              - option "Consecutive"
+          - generic [ref=e84]:
+            - button "Reveal votes" [ref=e85] [cursor=pointer]
+            - button "Reset round" [ref=e86] [cursor=pointer]

@@ -1,59 +1,102 @@
 .shell {
-  width: min(1180px, 100%);
-  margin: 0 auto;
-  display: grid;
-  gap: 20px;
-  padding: 32px 20px 56px;
+  min-height: 100vh;
+  background: var(--white);
 }
 
+/* ── Dark header bar ── */
 .hero {
-  display: grid;
-  gap: 16px;
-  border: 1px solid var(--line);
-  border-radius: 28px;
-  padding: 24px;
-  background: linear-gradient(150deg, var(--surface-strong), rgb(255 255 255 / 76%));
-  box-shadow: var(--shadow);
+  background: var(--dark);
+  color: var(--white);
+}
+
+.hero-inner {
+  width: min(1180px, 100%);
+  margin: 0 auto;
+  padding: 32px 20px;
 }
 
 .hero-header {
   display: flex;
   flex-wrap: wrap;
+  align-items: flex-start;
   justify-content: space-between;
-  gap: 12px;
+  gap: 16px;
+  margin-bottom: 20px;
 }
 
 .eyebrow {
-  color: var(--accent-strong);
-  text-transform: uppercase;
-  letter-spacing: 0.14em;
+  font-family: var(--font-body), sans-serif;
   font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--cool-gray);
+  margin-bottom: 8px;
 }
 
 .title {
-  font-family: var(--font-display), serif;
-  font-size: clamp(2.2rem, 5vw, 4rem);
-  line-height: 0.96;
-  letter-spacing: -0.05em;
+  font-family: var(--font-display), sans-serif;
+  font-size: clamp(1.75rem, 4vw, 3rem);
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: -0.03em;
+  color: var(--white);
+  word-break: break-all;
 }
 
 .lede {
-  color: var(--muted);
-  line-height: 1.7;
+  color: rgb(255 255 255 / 60%);
+  font-family: var(--font-body), sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+  letter-spacing: 0.16px;
+  margin-top: 8px;
 }
 
 .status-bar {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
+  gap: 8px;
 }
 
 .pill {
-  padding: 8px 12px;
-  border-radius: 999px;
-  background: rgb(255 255 255 / 80%);
-  border: 1px solid var(--line);
-  font-size: 0.88rem;
+  padding: 8px 16px;
+  border-radius: 9999px;
+  background: rgb(244 244 244 / 10%);
+  border: 1px solid rgb(244 244 244 / 20%);
+  color: rgb(255 255 255 / 75%);
+  font-family: var(--font-body), sans-serif;
+  font-size: 13px;
+  letter-spacing: 0.16px;
+}
+
+/* Ghost button on dark background */
+.copy-button {
+  flex-shrink: 0;
+  border-radius: 9999px;
+  padding: 12px 24px;
+  background: rgb(244 244 244 / 10%);
+  border: 2px solid rgb(244 244 244 / 25%);
+  color: var(--white);
+  font-family: var(--font-display), sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0.16px;
+  white-space: nowrap;
+  transition: opacity 160ms ease;
+}
+
+.copy-button:hover {
+  opacity: 0.75;
+}
+
+/* ── White content area ── */
+.content {
+  width: min(1180px, 100%);
+  margin: 0 auto;
+  padding: 32px 20px 64px;
+  display: grid;
+  gap: 20px;
 }
 
 .grid {
@@ -62,22 +105,24 @@
 }
 
 .card {
-  display: grid;
-  gap: 14px;
-  border: 1px solid var(--line);
-  border-radius: 24px;
-  padding: 20px;
-  background: rgb(255 255 255 / 72%);
+  border-radius: 20px;
+  padding: 28px;
+  background: var(--surface);
 }
 
 .section-title {
-  font-family: var(--font-display), serif;
-  font-size: 1.5rem;
+  font-family: var(--font-display), sans-serif;
+  font-size: 20px;
+  font-weight: 500;
+  color: var(--dark);
+  margin-bottom: 20px;
+  letter-spacing: -0.01em;
 }
 
+/* ── Participants ── */
 .participants {
   display: grid;
-  gap: 10px;
+  gap: 8px;
 }
 
 .participant {
@@ -85,10 +130,9 @@
   align-items: center;
   justify-content: space-between;
   gap: 14px;
-  padding: 14px 16px;
-  border-radius: 20px;
-  background: rgb(255 255 255 / 84%);
-  border: 1px solid rgb(29 26 23 / 10%);
+  padding: 14px 20px;
+  border-radius: 12px;
+  background: var(--white);
 }
 
 .participant-meta {
@@ -97,25 +141,100 @@
 }
 
 .participant-name {
+  font-family: var(--font-body), sans-serif;
   font-weight: 600;
+  font-size: 15px;
+  letter-spacing: 0.16px;
+  color: var(--dark);
 }
 
 .participant-subtle {
-  color: var(--muted);
-  font-size: 0.88rem;
+  color: var(--cool-gray);
+  font-size: 13px;
+  letter-spacing: 0.16px;
 }
 
 .vote-badge {
-  min-width: 68px;
-  padding: 10px 12px;
-  border-radius: 18px;
+  min-width: 56px;
+  padding: 8px 12px;
+  border-radius: 10px;
   text-align: center;
-  background: rgb(214 79 42 / 12%);
+  background: var(--dark);
+  color: var(--white);
+  font-family: var(--font-display), sans-serif;
+  font-size: 15px;
+  font-weight: 500;
 }
 
+.vote-badge-empty {
+  background: transparent;
+  color: var(--cool-gray);
+  border: 1px solid var(--border);
+}
+
+/* ── Controls column ── */
 .controls {
   display: grid;
-  gap: 14px;
+  gap: 20px;
+}
+
+.field-row {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.label {
+  font-family: var(--font-body), sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--cool-gray);
+}
+
+.hint {
+  color: var(--mid-slate);
+  font-family: var(--font-body), sans-serif;
+  font-size: 14px;
+  line-height: 1.6;
+  letter-spacing: 0.16px;
+  margin-bottom: 16px;
+}
+
+.input {
+  border: 2px solid transparent;
+  border-radius: 9999px;
+  padding: 12px 20px;
+  background: var(--white);
+  font-family: var(--font-body), sans-serif;
+  font-size: 15px;
+  letter-spacing: 0.24px;
+  color: var(--dark);
+  outline: none;
+  transition: border-color 160ms ease;
+  width: 100%;
+}
+
+.select {
+  appearance: none;
+  cursor: pointer;
+  border: 2px solid transparent;
+  border-radius: 12px;
+  padding: 12px 16px;
+  background: var(--white);
+  font-family: var(--font-body), sans-serif;
+  font-size: 15px;
+  letter-spacing: 0.24px;
+  color: var(--dark);
+  outline: none;
+  transition: border-color 160ms ease;
+  width: 100%;
+}
+
+.input:focus,
+.select:focus {
+  border-color: var(--dark);
 }
 
 .button-row {
@@ -124,102 +243,110 @@
   gap: 10px;
 }
 
+/* ── Universal pill buttons ── */
 .button,
-.button-ghost,
-.card-button {
-  border-radius: 999px;
-  transition:
-    transform 160ms ease,
-    background-color 160ms ease,
-    border-color 160ms ease;
+.button-ghost {
+  border-radius: 9999px;
+  padding: 12px 24px;
+  font-family: var(--font-display), sans-serif;
+  font-size: 15px;
+  font-weight: 500;
+  letter-spacing: 0.16px;
+  transition: opacity 160ms ease;
+  white-space: nowrap;
 }
 
-.button,
-.card-button {
+/* Primary dark pill */
+.button {
   border: none;
-  background: var(--accent);
-  color: white;
+  background: var(--dark);
+  color: var(--white);
 }
 
-.button,
+/* Outlined pill */
 .button-ghost {
-  padding: 12px 16px;
-}
-
-.button-ghost {
-  border: 1px solid var(--line);
-  background: rgb(255 255 255 / 80%);
-}
-
-.card-button {
-  padding: 18px 14px;
-  font-family: var(--font-display), serif;
-  font-size: 1.25rem;
-}
-
-.card-button-active {
-  background: #1d1a17;
-}
-
-.card-button-selected {
-  background: #d64f2a;
-  box-shadow: inset 0 0 0 2px rgb(255 255 255 / 28%);
-}
-
-.card-button-inactive {
-  border: 1px solid var(--line);
-  background: rgb(255 255 255 / 90%);
-  color: var(--ink);
+  border: 2px solid var(--dark);
+  background: transparent;
+  color: var(--dark);
 }
 
 .button:disabled,
-.button-ghost:disabled,
-.card-button:disabled {
-  opacity: 0.55;
+.button-ghost:disabled {
+  opacity: 0.4;
   cursor: not-allowed;
 }
 
 .button:hover:not(:disabled),
-.button-ghost:hover:not(:disabled),
-.card-button:hover:not(:disabled) {
-  transform: translateY(-1px);
+.button-ghost:hover:not(:disabled) {
+  opacity: 0.8;
 }
 
+/* ── Voting cards ── */
 .card-grid {
   display: grid;
-  gap: 10px;
-  grid-template-columns: repeat(auto-fit, minmax(78px, 1fr));
+  gap: 8px;
+  grid-template-columns: repeat(auto-fit, minmax(68px, 1fr));
+  margin-bottom: 16px;
 }
 
-.field-row {
-  display: grid;
-  gap: 10px;
+.card-button {
+  border-radius: 12px;
+  padding: 20px 12px;
+  font-family: var(--font-display), sans-serif;
+  font-size: 1.25rem;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  transition: opacity 160ms ease, transform 120ms ease;
 }
 
-.label {
-  font-size: 0.9rem;
-  color: var(--muted);
+.card-button-active {
+  border: none;
+  background: var(--dark);
+  color: var(--white);
 }
 
-.hint {
-  color: var(--muted);
-  font-size: 0.94rem;
-  line-height: 1.6;
+.card-button-selected {
+  border: none;
+  background: var(--blue);
+  color: var(--white);
 }
 
-.input,
-.select {
-  border: 1px solid rgb(29 26 23 / 16%);
-  border-radius: 16px;
-  padding: 12px 14px;
-  background: white;
+.card-button-inactive {
+  border: 2px solid var(--border);
+  background: var(--white);
+  color: var(--cool-gray);
 }
 
+.card-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.card-button:hover:not(:disabled) {
+  opacity: 0.85;
+  transform: translateY(-2px);
+}
+
+/* ── Error states ── */
 .error {
-  color: #a33114;
+  padding: 12px 20px;
+  border-radius: 12px;
+  background: rgb(226 59 74 / 8%);
+  color: var(--danger);
+  font-family: var(--font-body), sans-serif;
+  font-size: 14px;
+  letter-spacing: 0.16px;
 }
 
 @media (width >= 920px) {
+  .hero-inner {
+    padding: 40px;
+  }
+
+  .content {
+    padding: 40px 40px 80px;
+  }
+
   .grid {
     grid-template-columns: 1.2fr 0.8fr;
     align-items: start;

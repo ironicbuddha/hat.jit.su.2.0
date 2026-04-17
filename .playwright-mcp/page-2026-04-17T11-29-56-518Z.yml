@@ -1,0 +1,19 @@
+- generic [active] [ref=e1]:
+  - main [ref=e2]:
+    - generic [ref=e4]:
+      - paragraph [ref=e5]: Planning poker
+      - heading "Hatjitsu" [level=1] [ref=e6]
+      - paragraph [ref=e7]: Run a planning poker session with your team. Create a room and share the link — no accounts required.
+    - generic [ref=e11]:
+      - generic [ref=e12]:
+        - generic [ref=e13]: Create a room
+        - textbox "Create a room" [ref=e14]:
+          - /placeholder: Your display name
+        - button "Create room" [ref=e15] [cursor=pointer]
+      - generic [ref=e16]:
+        - generic [ref=e17]: Join a room
+        - textbox "Join a room" [ref=e18]:
+          - /placeholder: Room code
+        - textbox "Your display name" [ref=e19]
+        - button "Join room" [ref=e20] [cursor=pointer]
+  - alert [ref=e21]
