@@ -1,7 +1,13 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { startTransition, useEffect, useEffectEvent, useMemo, useState } from 'react';
+import {
+  startTransition,
+  useEffect,
+  useEffectEvent,
+  useMemo,
+  useState,
+} from 'react';
 
 import type { RoomSnapshot } from '@/domain/rooms/types';
 import { CARD_PACKS } from '@/shared/types/cards';
@@ -28,7 +34,9 @@ async function request<T>(input: RequestInfo, init?: RequestInit): Promise<T> {
       ...(init?.headers ?? {}),
     },
   });
-  const data = (await response.json().catch(() => ({}))) as T & { error?: string };
+  const data = (await response.json().catch(() => ({}))) as T & {
+    error?: string;
+  };
 
   if (!response.ok) {
     throw new Error(data.error ?? 'Request failed.');
@@ -40,19 +48,22 @@ async function request<T>(input: RequestInfo, init?: RequestInit): Promise<T> {
 export function RoomClient({ roomId }: Props) {
   const router = useRouter();
   const [snapshot, setSnapshot] = useState<RoomSnapshot | null>(null);
-  const [realtime, setRealtime] = useState<LoadRoomResponse['realtime'] | null>(null);
+  const [realtime, setRealtime] = useState<LoadRoomResponse['realtime'] | null>(
+    null,
+  );
   const [loading, setLoading] = useState(true);
   const [action, setAction] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [joinName, setJoinName] = useState('');
   const [profileName, setProfileName] = useState('');
   const [linkCopied, setLinkCopied] = useState(false);
-  const [connectionState, setConnectionState] = useState<'connecting' | 'live' | 'polling'>(
-    'connecting',
-  );
+  const [connectionState, setConnectionState] = useState<
+    'connecting' | 'live' | 'polling'
+  >('connecting');
 
   const self = useMemo(
-    () => snapshot?.participants.find((participant) => participant.isSelf) ?? null,
+    () =>
+      snapshot?.participants.find((participant) => participant.isSelf) ?? null,
     [snapshot],
   );
 
@@ -69,14 +80,21 @@ export function RoomClient({ roomId }: Props) {
       setRealtime(data.realtime);
       setProfileName((current) => {
         const selfName =
-          data.snapshot.participants.find((participant) => participant.isSelf)?.displayName ?? '';
+          data.snapshot.participants.find((participant) => participant.isSelf)
+            ?.displayName ?? '';
 
         return current || selfName;
       });
-      setConnectionState(data.realtime.provider === 'ably' ? 'live' : 'polling');
+      setConnectionState(
+        data.realtime.provider === 'ably' ? 'live' : 'polling',
+      );
       setError(null);
     } catch (caughtError) {
-      setError(caughtError instanceof Error ? caughtError.message : 'Could not load room.');
+      setError(
+        caughtError instanceof Error
+          ? caughtError.message
+          : 'Could not load room.',
+      );
     } finally {
       setLoading(false);
     }
@@ -166,17 +184,25 @@ export function RoomClient({ roomId }: Props) {
     setAction('join');
 
     try {
-      const data = await request<{ snapshot: RoomSnapshot }>(`/api/rooms/${roomId}/join`, {
-        method: 'POST',
-        body: JSON.stringify({ displayName: joinName, role }),
-      });
+      const data = await request<{ snapshot: RoomSnapshot }>(
+        `/api/rooms/${roomId}/join`,
+        {
+          method: 'POST',
+          body: JSON.stringify({ displayName: joinName, role }),
+        },
+      );
       setSnapshot(data.snapshot);
       setProfileName(
-        data.snapshot.participants.find((participant) => participant.isSelf)?.displayName ?? '',
+        data.snapshot.participants.find((participant) => participant.isSelf)
+          ?.displayName ?? '',
       );
       setError(null);
     } catch (caughtError) {
-      setError(caughtError instanceof Error ? caughtError.message : 'Could not join the room.');
+      setError(
+        caughtError instanceof Error
+          ? caughtError.message
+          : 'Could not join the room.',
+      );
     } finally {
       setAction(null);
     }
@@ -200,7 +226,9 @@ export function RoomClient({ roomId }: Props) {
       setError(null);
     } catch (caughtError) {
       setError(
-        caughtError instanceof Error ? caughtError.message : 'Could not update profile.',
+        caughtError instanceof Error
+          ? caughtError.message
+          : 'Could not update profile.',
       );
     } finally {
       setAction(null);
@@ -211,14 +239,21 @@ export function RoomClient({ roomId }: Props) {
     setAction('vote');
 
     try {
-      const data = await request<{ snapshot: RoomSnapshot }>(`/api/rooms/${roomId}/votes`, {
-        method: 'POST',
-        body: JSON.stringify({ value }),
-      });
+      const data = await request<{ snapshot: RoomSnapshot }>(
+        `/api/rooms/${roomId}/votes`,
+        {
+          method: 'POST',
+          body: JSON.stringify({ value }),
+        },
+      );
       setSnapshot(data.snapshot);
       setError(null);
     } catch (caughtError) {
-      setError(caughtError instanceof Error ? caughtError.message : 'Could not cast vote.');
+      setError(
+        caughtError instanceof Error
+          ? caughtError.message
+          : 'Could not cast vote.',
+      );
     } finally {
       setAction(null);
     }
@@ -228,13 +263,20 @@ export function RoomClient({ roomId }: Props) {
     setAction('clear');
 
     try {
-      const data = await request<{ snapshot: RoomSnapshot }>(`/api/rooms/${roomId}/votes`, {
-        method: 'DELETE',
-      });
+      const data = await request<{ snapshot: RoomSnapshot }>(
+        `/api/rooms/${roomId}/votes`,
+        {
+          method: 'DELETE',
+        },
+      );
       setSnapshot(data.snapshot);
       setError(null);
     } catch (caughtError) {
-      setError(caughtError instanceof Error ? caughtError.message : 'Could not clear vote.');
+      setError(
+        caughtError instanceof Error
+          ? caughtError.message
+          : 'Could not clear vote.',
+      );
     } finally {
       setAction(null);
     }
@@ -244,13 +286,20 @@ export function RoomClient({ roomId }: Props) {
     setAction('reveal');
 
     try {
-      const data = await request<{ snapshot: RoomSnapshot }>(`/api/rooms/${roomId}/reveal`, {
-        method: 'POST',
-      });
+      const data = await request<{ snapshot: RoomSnapshot }>(
+        `/api/rooms/${roomId}/reveal`,
+        {
+          method: 'POST',
+        },
+      );
       setSnapshot(data.snapshot);
       setError(null);
     } catch (caughtError) {
-      setError(caughtError instanceof Error ? caughtError.message : 'Could not reveal round.');
+      setError(
+        caughtError instanceof Error
+          ? caughtError.message
+          : 'Could not reveal round.',
+      );
     } finally {
       setAction(null);
     }
@@ -260,13 +309,20 @@ export function RoomClient({ roomId }: Props) {
     setAction('reset');
 
     try {
-      const data = await request<{ snapshot: RoomSnapshot }>(`/api/rooms/${roomId}/reset`, {
-        method: 'POST',
-      });
+      const data = await request<{ snapshot: RoomSnapshot }>(
+        `/api/rooms/${roomId}/reset`,
+        {
+          method: 'POST',
+        },
+      );
       setSnapshot(data.snapshot);
       setError(null);
     } catch (caughtError) {
-      setError(caughtError instanceof Error ? caughtError.message : 'Could not reset round.');
+      setError(
+        caughtError instanceof Error
+          ? caughtError.message
+          : 'Could not reset round.',
+      );
     } finally {
       setAction(null);
     }
@@ -296,7 +352,11 @@ export function RoomClient({ roomId }: Props) {
       setSnapshot(data.snapshot);
       setError(null);
     } catch (caughtError) {
-      setError(caughtError instanceof Error ? caughtError.message : 'Could not change card pack.');
+      setError(
+        caughtError instanceof Error
+          ? caughtError.message
+          : 'Could not change card pack.',
+      );
     } finally {
       setAction(null);
     }
@@ -320,7 +380,10 @@ export function RoomClient({ roomId }: Props) {
           <p className={styles.eyebrow}>Room unavailable</p>
           <h1 className={styles.title}>This room could not be loaded.</h1>
           <p className={styles.lede}>{error ?? 'The room may have expired.'}</p>
-          <button className={styles['button-ghost']} onClick={() => router.push('/')}>
+          <button
+            className={styles['button-ghost']}
+            onClick={() => router.push('/')}
+          >
             Back to lobby
           </button>
         </section>
@@ -344,19 +407,20 @@ export function RoomClient({ roomId }: Props) {
             {linkCopied ? 'Copied room link' : 'Copy room link'}
           </button>
         </div>
-        <p className={styles.lede}>
+        {/*<p className={styles.lede}>
           Shared room state is authoritative. This page refreshes on poll, on
           visibility changes, and on managed realtime events when Ably is configured.
-        </p>
+        </p>*/}
         <div className={styles['status-bar']}>
-          <span className={styles.pill}>Revision {snapshot.revision}</span>
+          {/*<span className={styles.pill}>Revision {snapshot.revision}</span>*/}
           <span className={styles.pill}>
             {snapshot.votesSubmitted}/{snapshot.voterCount} votes in
           </span>
           <span className={styles.pill}>Card pack: {snapshot.cardPackId}</span>
-          <span className={styles.pill}>
-            Connection: {connectionState === 'live' ? 'live updates' : 'polling'}
-          </span>
+          {/*<span className={styles.pill}>
+            Connection:{' '}
+            {connectionState === 'live' ? 'live updates' : 'polling'}
+          </span>*/}
         </div>
         {error ? (
           <p className={styles.error} role="alert">
@@ -411,12 +475,13 @@ export function RoomClient({ roomId }: Props) {
                       {participant.isHost ? ' • host' : ''}
                     </span>
                     <span className={styles['participant-subtle']}>
-                      {participant.role} · {participant.hasVoted ? 'vote in' : 'waiting'}
+                      {participant.role} ·{' '}
+                      {participant.hasVoted ? 'vote in' : 'waiting'}
                     </span>
                   </div>
                   <span className={styles['vote-badge']}>
                     {snapshot.revealed
-                      ? participant.voteValue ?? '—'
+                      ? (participant.voteValue ?? '—')
                       : participant.hasVoted
                         ? '•••'
                         : '—'}
@@ -468,8 +533,8 @@ export function RoomClient({ roomId }: Props) {
             <section className={styles.card}>
               <h2 className={styles['section-title']}>Votes</h2>
               <p className={styles.hint}>
-                Your current pick stays highlighted until the round reveals. Tap another card to
-                change your vote.
+                Your current pick stays highlighted until the round reveals. Tap
+                another card to change your vote.
               </p>
               <div className={styles['card-grid']}>
                 {snapshot.availableCards.map((card) => (
@@ -479,10 +544,14 @@ export function RoomClient({ roomId }: Props) {
                         ? styles['card-button-inactive']
                         : selectedVote === card
                           ? styles['card-button-selected']
-                        : styles['card-button-active']
+                          : styles['card-button-active']
                     }`}
                     aria-pressed={selectedVote === card}
-                    disabled={action !== null || self?.role !== 'voter' || snapshot.revealed}
+                    disabled={
+                      action !== null ||
+                      self?.role !== 'voter' ||
+                      snapshot.revealed
+                    }
                     key={card}
                     onClick={() => void castVote(card)}
                   >
@@ -493,7 +562,11 @@ export function RoomClient({ roomId }: Props) {
               <div className={styles['button-row']}>
                 <button
                   className={styles['button-ghost']}
-                  disabled={action !== null || self?.role !== 'voter' || snapshot.revealed}
+                  disabled={
+                    action !== null ||
+                    self?.role !== 'voter' ||
+                    snapshot.revealed
+                  }
                   onClick={() => void clearVote()}
                 >
                   Clear vote

@@ -7,18 +7,16 @@ export default function HomePage() {
     <main className={styles.page}>
       <div className={styles.shell}>
         <section className={styles.hero}>
-          <p className={styles.eyebrow}>Bootstrap Foundation</p>
-          <h1 className={styles.title}>Hatjitsu is ready for the real build.</h1>
+          <p className={styles.eyebrow}></p>
+          <h1 className={styles.title}>Hatjitsu</h1>
           <p className={styles.lede}>
-            Create a planning room, hand the link to your team, and keep the
-            active round synchronized through shared room state. Anonymous
-            browser identity and reconnect-safe session recovery are built into
-            the flow.
+            Use this to conduct a planning poker session with your team. Create
+            a planning room, hand the link to your team.
           </p>
           <LobbyShell />
         </section>
 
-        <section className={styles.grid}>
+        {/*<section className={styles.grid}>
           <article className={styles.card}>
             <p className={styles.kicker}>Architecture</p>
             <h2>Server state stays authoritative</h2>
@@ -48,7 +46,7 @@ export default function HomePage() {
               <li>Polling with optional Ably fan-out</li>
             </ul>
           </article>
-        </section>
+        </section>*/}
       </div>
     </main>
   );
