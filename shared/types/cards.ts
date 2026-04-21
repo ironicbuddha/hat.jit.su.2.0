@@ -20,7 +20,7 @@ export const CARD_PACKS: CardPack[] = [
   {
     id: 'conseq',
     label: 'Consecutive',
-    cards: ['1', '2', '3', '4', '5', '?'],
+    cards: ['1', '2', '3', '4', '?'],
   },
 ];
 
