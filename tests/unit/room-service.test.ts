@@ -2,15 +2,18 @@ import { describe, expect, it } from 'vitest';
 
 import { MemoryRoomStore, resetMemoryRoomStore } from '@/data/memory-room-store';
 import { createRoomService, toRoomSnapshot } from '@/domain/rooms/service';
+import type { RoomUpdateEvent } from '@/domain/rooms/types';
 
-function createTestService() {
+function createTestService(publishedEvents: RoomUpdateEvent[] = []) {
   resetMemoryRoomStore();
 
   return createRoomService({
     store: new MemoryRoomStore(),
     ttlSeconds: 3600,
     updates: {
-      async publish() {},
+      async publish(event) {
+        publishedEvents.push(event);
+      },
       status() {
         return 'disabled' as const;
       },
@@ -152,5 +155,61 @@ describe('RoomService', () => {
       revealedSnapshot.participants.find((participant) => participant.id === joined.participantId)
         ?.voteValue,
     ).toBe('5');
+  });
+
+  it('lets hosts start a shared round timer and exposes it in snapshots', async () => {
+    const publishedEvents: RoomUpdateEvent[] = [];
+    const service = createTestService(publishedEvents);
+    const created = await service.createRoom('Host');
+
+    const timed = await service.startTimer(
+      created.bundle.room.id,
+      created.participantId,
+      300,
+    );
+    const snapshot = toRoomSnapshot(timed, created.participantId);
+
+    expect(timed.round.timer?.durationSeconds).toBe(300);
+    expect(snapshot.timer?.durationSeconds).toBe(300);
+    expect(snapshot.timer?.status).toBe('running');
+    expect(snapshot.timer?.startedAt).toEqual(timed.round.timer?.startedAt);
+    expect(snapshot.timer?.endsAt).toEqual(timed.round.timer?.endsAt);
+    expect(publishedEvents.some((event) => event.type === 'timer.started')).toBe(
+      true,
+    );
+  });
+
+  it('rejects non-host and invalid timer start requests', async () => {
+    const service = createTestService();
+    const created = await service.createRoom('Host');
+    const joined = await service.joinRoom({
+      roomId: created.bundle.room.id,
+      displayName: 'Bob',
+      role: 'voter',
+    });
+
+    await expect(
+      service.startTimer(created.bundle.room.id, joined.participantId, 300),
+    ).rejects.toThrow('Only the room host can perform this action.');
+    await expect(
+      service.startTimer(created.bundle.room.id, created.participantId, 5),
+    ).rejects.toThrow('Timer duration must be between 10 seconds and 60 minutes.');
+  });
+
+  it('clears timer state when the host resets the round', async () => {
+    const service = createTestService();
+    const created = await service.createRoom('Host');
+
+    const timed = await service.startTimer(
+      created.bundle.room.id,
+      created.participantId,
+      300,
+    );
+    expect(toRoomSnapshot(timed, created.participantId).timer).not.toBeNull();
+
+    const reset = await service.reset(created.bundle.room.id, created.participantId);
+
+    expect(reset.round.timer).toBeNull();
+    expect(toRoomSnapshot(reset, created.participantId).timer).toBeNull();
   });
 });

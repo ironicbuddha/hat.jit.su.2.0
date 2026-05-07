@@ -5,6 +5,7 @@ export type ParticipantId = string;
 export type RoundId = string;
 export type ParticipantRole = 'voter' | 'observer';
 export type RoundStatus = 'active' | 'revealed';
+export type RoundTimerStatus = 'running' | 'expired';
 export type VoteValue = string;
 
 export const DEFAULT_CARD_PACK_ID: CardPackId = 'fibonacci';
@@ -31,6 +32,13 @@ export type RoundRecord = {
   status: RoundStatus;
   createdAt: string;
   revealedAt: string | null;
+  timer?: RoundTimerRecord | null;
+};
+
+export type RoundTimerRecord = {
+  durationSeconds: number;
+  startedAt: string;
+  endsAt: string;
 };
 
 export type VoteRecord = {
@@ -72,6 +80,11 @@ export type RoomSnapshot = {
   canReset: boolean;
   voterCount: number;
   votesSubmitted: number;
+  timer: RoundTimerSnapshot | null;
+};
+
+export type RoundTimerSnapshot = RoundTimerRecord & {
+  status: RoundTimerStatus;
 };
 
 export type RoomUpdateEvent = {
@@ -85,6 +98,8 @@ export type RoomUpdateEvent = {
     | 'vote.cleared'
     | 'round.revealed'
     | 'round.reset'
-    | 'card-pack.changed';
+    | 'card-pack.changed'
+    | 'timer.started'
+    | 'timer.cleared';
   emittedAt: string;
 };

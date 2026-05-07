@@ -1,6 +1,6 @@
 # Working Memory
 
-Last updated: 2026-04-17
+Last updated: 2026-05-07
 
 ## Repo Status
 
@@ -23,6 +23,7 @@ Last updated: 2026-04-17
     - Fibonacci
     - T-Shirt
     - Consecutive
+  - host-controlled shared round timers with participant-local audio cues
 
 ## Current File Shape
 
@@ -80,6 +81,20 @@ Last updated: 2026-04-17
 - Ran verification for the deployed-fix and UX changes:
   - `pnpm test -- --run tests/unit/upstash-room-store.test.ts tests/unit/room-service.test.ts`
   - `pnpm typecheck`
+  - `pnpm build`
+  - `pnpm test:e2e -- tests/e2e/room-flow.spec.ts`
+- Implemented the `add-round-timebox-timer` OpenSpec change:
+  - added timer state to room snapshots
+  - added host-only timer start and clear workflows
+  - clears timer state on round reset and card-pack round replacement
+  - added room UI for shared countdown display and host timer controls
+  - added generated Web Audio beeps/end cue with sound enable/test fallback
+  - added unit and Playwright coverage for timer behavior and sound affordances
+- Ran verification for the timer change:
+  - `openspec validate add-round-timebox-timer`
+  - `pnpm typecheck`
+  - `pnpm lint`
+  - `pnpm test`
   - `pnpm build`
   - `pnpm test:e2e -- tests/e2e/room-flow.spec.ts`
 

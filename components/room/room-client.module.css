@@ -70,6 +70,40 @@
   letter-spacing: 0.16px;
 }
 
+.timer-pill {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 10px;
+  padding: 8px 18px;
+  background: rgb(73 79 223 / 28%);
+  border-color: rgb(255 255 255 / 35%);
+  color: var(--white);
+}
+
+.timer-pill-urgent {
+  background: rgb(226 59 74 / 28%);
+  border-color: rgb(226 59 74 / 70%);
+  color: var(--white);
+}
+
+.timer-pill-label {
+  font-family: var(--font-body), sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.timer-pill-value {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+    'Liberation Mono', 'Courier New', monospace;
+  font-size: 1.2rem;
+  font-weight: 700;
+  letter-spacing: 0;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
 /* Ghost button on dark background */
 .copy-button {
   flex-shrink: 0;
@@ -200,6 +234,92 @@
   line-height: 1.6;
   letter-spacing: 0.16px;
   margin-bottom: 16px;
+}
+
+.timer-panel {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+  padding: 18px;
+  border-radius: 12px;
+  background: var(--white);
+}
+
+.timer-value {
+  display: block;
+  width: 7ch;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  outline: none;
+  padding: 0;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+    'Liberation Mono', 'Courier New', monospace;
+  font-size: 2.25rem;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--dark);
+  margin-bottom: 8px;
+  letter-spacing: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.timer-value:disabled {
+  opacity: 1;
+}
+
+.timer-value:not(:disabled):focus {
+  box-shadow: 0 0 0 3px rgb(73 79 223 / 22%);
+}
+
+.timer-value-urgent {
+  color: var(--danger);
+}
+
+.timer-status {
+  flex-shrink: 0;
+  border-radius: 9999px;
+  padding: 6px 12px;
+  background: rgb(0 168 126 / 12%);
+  color: var(--teal);
+  font-family: var(--font-body), sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.timer-status-expired {
+  background: rgb(236 126 0 / 12%);
+  color: var(--warning);
+}
+
+.sound-panel {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+
+.timer-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.sound-status {
+  color: var(--mid-slate);
+  font-family: var(--font-body), sans-serif;
+  font-size: 13px;
+  letter-spacing: 0.16px;
 }
 
 .input {

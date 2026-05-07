@@ -14,6 +14,7 @@ import {
   type ParticipantId,
   type ParticipantRecord,
   type ParticipantRole,
+  type RoundTimerSnapshot,
   type RoomSnapshot,
   type RoomSnapshotParticipant,
   type RoomUpdateEvent,
@@ -40,6 +41,9 @@ export type UpdateParticipantInput = {
   role?: ParticipantRole;
 };
 
+const MIN_TIMER_DURATION_SECONDS = 10;
+const MAX_TIMER_DURATION_SECONDS = 60 * 60;
+
 function cleanName(name: string | undefined, fallback: string): string {
   return (name?.trim() || fallback).slice(0, 32);
 }
@@ -52,6 +56,19 @@ function assertHost(bundle: StoredRoomBundle, participantId: ParticipantId): voi
 
 function nextRoomExpiry(ttlSeconds: number): string {
   return plusSeconds(new Date(), ttlSeconds);
+}
+
+function buildTimerSnapshot(bundle: StoredRoomBundle): RoundTimerSnapshot | null {
+  const timer = bundle.round.timer;
+
+  if (!timer) {
+    return null;
+  }
+
+  return {
+    ...timer,
+    status: Date.parse(timer.endsAt) <= Date.now() ? 'expired' : 'running',
+  };
 }
 
 function buildSnapshot(
@@ -95,6 +112,7 @@ function buildSnapshot(
     canReset: revealed || bundle.votes.length > 0,
     voterCount: voters.length,
     votesSubmitted,
+    timer: buildTimerSnapshot(bundle),
   };
 }
 
@@ -356,6 +374,7 @@ export class RoomService {
       status: 'active',
       createdAt: nowIso(),
       revealedAt: null,
+      timer: null,
     };
     bundle.votes = [];
     bundle.room.updatedAt = nowIso();
@@ -391,6 +410,7 @@ export class RoomService {
       status: 'active',
       createdAt: nowIso(),
       revealedAt: null,
+      timer: null,
     };
     bundle.room.updatedAt = nowIso();
     bundle.room.expiresAt = nextRoomExpiry(this.deps.ttlSeconds);
@@ -398,6 +418,61 @@ export class RoomService {
 
     const saved = await this.deps.store.saveRoom(bundle);
     await publish(this.deps.updates, roomId, saved.revision, 'card-pack.changed');
+    return saved;
+  }
+
+  async startTimer(
+    roomId: string,
+    participantId: ParticipantId,
+    durationSeconds: number,
+  ) {
+    const bundle = await this.deps.store.getRoom(roomId);
+
+    if (!bundle) {
+      throw new RoomNotFoundError();
+    }
+
+    assertHost(bundle, participantId);
+
+    if (
+      !Number.isInteger(durationSeconds) ||
+      durationSeconds < MIN_TIMER_DURATION_SECONDS ||
+      durationSeconds > MAX_TIMER_DURATION_SECONDS
+    ) {
+      throw new ValidationError('Timer duration must be between 10 seconds and 60 minutes.');
+    }
+
+    const now = new Date();
+    bundle.round.timer = {
+      durationSeconds,
+      startedAt: nowIso(now),
+      endsAt: plusSeconds(now, durationSeconds),
+    };
+    bundle.room.updatedAt = nowIso(now);
+    bundle.room.expiresAt = nextRoomExpiry(this.deps.ttlSeconds);
+    bundle.revision += 1;
+
+    const saved = await this.deps.store.saveRoom(bundle);
+    await publish(this.deps.updates, roomId, saved.revision, 'timer.started');
+    return saved;
+  }
+
+  async clearTimer(roomId: string, participantId: ParticipantId) {
+    const bundle = await this.deps.store.getRoom(roomId);
+
+    if (!bundle) {
+      throw new RoomNotFoundError();
+    }
+
+    assertHost(bundle, participantId);
+
+    bundle.round.timer = null;
+    bundle.room.updatedAt = nowIso();
+    bundle.room.expiresAt = nextRoomExpiry(this.deps.ttlSeconds);
+    bundle.revision += 1;
+
+    const saved = await this.deps.store.saveRoom(bundle);
+    await publish(this.deps.updates, roomId, saved.revision, 'timer.cleared');
     return saved;
   }
 }

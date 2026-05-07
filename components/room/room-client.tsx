@@ -6,6 +6,7 @@ import {
   useEffect,
   useEffectEvent,
   useMemo,
+  useRef,
   useState,
 } from 'react';
 
@@ -26,6 +27,10 @@ type Props = {
   roomId: string;
 };
 
+const DEFAULT_TIMER_DURATION_SECONDS = 120;
+
+type SoundState = 'preparing' | 'armed' | 'needs-enable';
+
 async function request<T>(input: RequestInfo, init?: RequestInit): Promise<T> {
   const response = await fetch(input, {
     ...init,
@@ -45,6 +50,68 @@ async function request<T>(input: RequestInfo, init?: RequestInit): Promise<T> {
   return data;
 }
 
+function formatTimer(seconds: number): string {
+  const minutes = Math.floor(seconds / 60);
+  const remainingSeconds = seconds % 60;
+
+  return `${String(minutes).padStart(2, '0')}:${String(
+    remainingSeconds,
+  ).padStart(2, '0')}`;
+}
+
+function parseTimerInput(value: string): number | null {
+  const trimmed = value.trim();
+  const match = /^(\d{1,2})(?::([0-5]\d))?$/.exec(trimmed);
+
+  if (!match) {
+    return null;
+  }
+
+  const minutes = Number(match[1]);
+  const seconds = match[2] ? Number(match[2]) : 0;
+
+  return minutes * 60 + seconds;
+}
+
+function getTimerRemainingSeconds(timer: RoomSnapshot['timer']): number | null {
+  if (!timer) {
+    return null;
+  }
+
+  return Math.max(0, Math.ceil((Date.parse(timer.endsAt) - Date.now()) / 1000));
+}
+
+function scheduleTone(
+  context: AudioContext,
+  frequency: number,
+  durationSeconds: number,
+  delaySeconds = 0,
+) {
+  const oscillator = context.createOscillator();
+  const gain = context.createGain();
+  const startsAt = context.currentTime + delaySeconds;
+  const endsAt = startsAt + durationSeconds;
+
+  oscillator.type = 'sine';
+  oscillator.frequency.setValueAtTime(frequency, startsAt);
+  gain.gain.setValueAtTime(0.0001, startsAt);
+  gain.gain.exponentialRampToValueAtTime(0.18, startsAt + 0.015);
+  gain.gain.exponentialRampToValueAtTime(0.0001, endsAt);
+  oscillator.connect(gain);
+  gain.connect(context.destination);
+  oscillator.start(startsAt);
+  oscillator.stop(endsAt + 0.02);
+}
+
+function playCountdownBeep(context: AudioContext) {
+  scheduleTone(context, 880, 0.08);
+}
+
+function playEndCue(context: AudioContext) {
+  scheduleTone(context, 660, 0.14);
+  scheduleTone(context, 880, 0.18, 0.18);
+}
+
 export function RoomClient({ roomId }: Props) {
   const router = useRouter();
   const [snapshot, setSnapshot] = useState<RoomSnapshot | null>(null);
@@ -57,6 +124,14 @@ export function RoomClient({ roomId }: Props) {
   const [joinName, setJoinName] = useState('');
   const [profileName, setProfileName] = useState('');
   const [linkCopied, setLinkCopied] = useState(false);
+  const [timerInput, setTimerInput] = useState(
+    formatTimer(DEFAULT_TIMER_DURATION_SECONDS),
+  );
+  const [remainingSeconds, setRemainingSeconds] = useState<number | null>(null);
+  const [soundState, setSoundState] = useState<SoundState>('preparing');
+  const audioContextRef = useRef<AudioContext | null>(null);
+  const lastBeepSecondRef = useRef<number | null>(null);
+  const endCuePlayedForRef = useRef<string | null>(null);
 
   const self = useMemo(
     () =>
@@ -67,6 +142,48 @@ export function RoomClient({ roomId }: Props) {
   const isHost = Boolean(self?.isHost);
   const needsJoin = !self;
   const selectedVote = self?.voteValue ?? null;
+  const timer = snapshot?.timer ?? null;
+  const timerStatus = timer
+    ? remainingSeconds === 0 || timer.status === 'expired'
+      ? 'expired'
+      : 'running'
+    : null;
+  const timerLabel =
+    timer && remainingSeconds !== null
+      ? formatTimer(remainingSeconds)
+      : timerInput;
+  const isTimerUrgent =
+    Boolean(timer) && remainingSeconds !== null && remainingSeconds <= 10;
+
+  async function prepareAudio(playTest = false) {
+    const AudioContextConstructor =
+      window.AudioContext ??
+      (window as Window & { webkitAudioContext?: typeof AudioContext })
+        .webkitAudioContext;
+
+    if (!AudioContextConstructor) {
+      setSoundState('needs-enable');
+      return;
+    }
+
+    try {
+      const context =
+        audioContextRef.current ?? new AudioContextConstructor();
+      audioContextRef.current = context;
+
+      if (context.state === 'suspended') {
+        await context.resume();
+      }
+
+      if (playTest) {
+        playCountdownBeep(context);
+      }
+
+      setSoundState('armed');
+    } catch {
+      setSoundState('needs-enable');
+    }
+  }
 
   const refreshRoom = useEffectEvent(async () => {
     setLoading((current) => current && !snapshot);
@@ -172,6 +289,52 @@ export function RoomClient({ roomId }: Props) {
 
     return () => window.clearTimeout(timeout);
   }, [linkCopied]);
+
+  useEffect(() => {
+    void prepareAudio(false);
+  }, []);
+
+  useEffect(() => {
+    function tick() {
+      setRemainingSeconds(getTimerRemainingSeconds(snapshot?.timer ?? null));
+    }
+
+    tick();
+    const interval = window.setInterval(tick, 250);
+
+    return () => window.clearInterval(interval);
+  }, [snapshot?.timer]);
+
+  useEffect(() => {
+    lastBeepSecondRef.current = null;
+    endCuePlayedForRef.current = null;
+  }, [snapshot?.timer?.endsAt]);
+
+  useEffect(() => {
+    if (!timer || remainingSeconds === null || soundState !== 'armed') {
+      return;
+    }
+
+    const context = audioContextRef.current;
+
+    if (!context) {
+      return;
+    }
+
+    if (
+      remainingSeconds > 0 &&
+      remainingSeconds <= 10 &&
+      lastBeepSecondRef.current !== remainingSeconds
+    ) {
+      playCountdownBeep(context);
+      lastBeepSecondRef.current = remainingSeconds;
+    }
+
+    if (remainingSeconds === 0 && endCuePlayedForRef.current !== timer.endsAt) {
+      playEndCue(context);
+      endCuePlayedForRef.current = timer.endsAt;
+    }
+  }, [remainingSeconds, soundState, timer]);
 
   async function joinRoom(role: 'voter' | 'observer') {
     setAction('join');
@@ -355,6 +518,66 @@ export function RoomClient({ roomId }: Props) {
     }
   }
 
+  async function startTimer() {
+    setAction('timer');
+
+    try {
+      const durationSeconds = parseTimerInput(timerInput);
+
+      if (!durationSeconds) {
+        throw new Error('Enter a timer duration as MM:SS.');
+      }
+
+      const data = await request<{ snapshot: RoomSnapshot }>(
+        `/api/rooms/${roomId}/timer`,
+        {
+          method: 'POST',
+          body: JSON.stringify({
+            durationSeconds,
+          }),
+        },
+      );
+      setSnapshot(data.snapshot);
+      setError(null);
+    } catch (caughtError) {
+      setError(
+        caughtError instanceof Error
+          ? caughtError.message
+          : 'Could not start timer.',
+      );
+    } finally {
+      setAction(null);
+    }
+  }
+
+  async function clearTimer() {
+    setAction('timer');
+
+    try {
+      const data = await request<{ snapshot: RoomSnapshot }>(
+        `/api/rooms/${roomId}/timer`,
+        {
+          method: 'DELETE',
+        },
+      );
+      setSnapshot(data.snapshot);
+      setError(null);
+    } catch (caughtError) {
+      setError(
+        caughtError instanceof Error
+          ? caughtError.message
+          : 'Could not clear timer.',
+      );
+    } finally {
+      setAction(null);
+    }
+  }
+
+  function normalizeTimerInput() {
+    const durationSeconds = parseTimerInput(timerInput);
+    setTimerInput(formatTimer(durationSeconds ?? DEFAULT_TIMER_DURATION_SECONDS));
+  }
+
   if (loading && !snapshot) {
     return (
       <main className={styles.shell}>
@@ -414,6 +637,14 @@ export function RoomClient({ roomId }: Props) {
             <span className={styles.pill}>
               Card pack: {snapshot.cardPackId}
             </span>
+            <span
+              className={`${styles.pill} ${styles['timer-pill']} ${
+                isTimerUrgent ? styles['timer-pill-urgent'] : ''
+              }`}
+            >
+              <span className={styles['timer-pill-label']}>Timer:</span>
+              <span className={styles['timer-pill-value']}>{timerLabel}</span>
+            </span>
           </div>
         </div>
       </header>
@@ -456,6 +687,20 @@ export function RoomClient({ roomId }: Props) {
                 Join as observer
               </button>
             </div>
+            {soundState !== 'armed' ? (
+              <div className={styles['sound-panel']}>
+                <p className={styles.hint}>
+                  Enable timer sounds to hear countdown beeps in this browser.
+                </p>
+                <button
+                  className={styles['button-ghost']}
+                  onClick={() => void prepareAudio(true)}
+                  type="button"
+                >
+                  Enable timer sound
+                </button>
+              </div>
+            ) : null}
           </section>
         ) : (
           <div className={styles.grid}>
@@ -537,6 +782,83 @@ export function RoomClient({ roomId }: Props) {
 
               <section className={styles.card}>
                 <h2 className={styles['section-title']}>Votes</h2>
+                {isHost ? (
+                  <>
+                    <div className={styles['timer-panel']}>
+                      <div>
+                        <label className={styles.label} htmlFor="timer-input">
+                          Timer
+                        </label>
+                        <input
+                          className={`${styles['timer-value']} ${
+                            isTimerUrgent ? styles['timer-value-urgent'] : ''
+                          }`}
+                          disabled={Boolean(timer) || action !== null}
+                          id="timer-input"
+                          inputMode="numeric"
+                          onBlur={normalizeTimerInput}
+                          onChange={(event) =>
+                            setTimerInput(event.target.value)
+                          }
+                          pattern="[0-9]{1,2}:[0-5][0-9]"
+                          value={timerLabel}
+                        />
+                        <p className={styles.hint}>
+                          {timer
+                            ? timerStatus === 'expired'
+                              ? 'Timebox complete. Votes stay hidden until reveal.'
+                              : 'Shared timer running for this round.'
+                            : 'Two-minute timebox ready.'}
+                        </p>
+                      </div>
+                      <span
+                        className={`${styles['timer-status']} ${
+                          timerStatus === 'expired'
+                            ? styles['timer-status-expired']
+                            : ''
+                        }`}
+                      >
+                        {timerStatus ?? 'idle'}
+                      </span>
+                    </div>
+                    <div className={styles['timer-actions']}>
+                      <button
+                        className={styles.button}
+                        disabled={action !== null}
+                        onClick={() => void startTimer()}
+                      >
+                        Start timer
+                      </button>
+                      <button
+                        className={styles['button-ghost']}
+                        disabled={action !== null || !timer}
+                        onClick={() => void clearTimer()}
+                      >
+                        Clear timer
+                      </button>
+                      <span className={styles['sound-status']}>
+                        Timer sound: {soundState === 'armed' ? 'ready' : 'off'}
+                      </span>
+                      {soundState !== 'armed' ? (
+                        <button
+                          className={styles['button-ghost']}
+                          onClick={() => void prepareAudio(true)}
+                          type="button"
+                        >
+                          Enable timer sound
+                        </button>
+                      ) : (
+                        <button
+                          className={styles['button-ghost']}
+                          onClick={() => void prepareAudio(true)}
+                          type="button"
+                        >
+                          Test sound
+                        </button>
+                      )}
+                    </div>
+                  </>
+                ) : null}
                 <p className={styles.hint}>
                   Your current pick stays highlighted until the round reveals.
                   Tap another card to change your vote.

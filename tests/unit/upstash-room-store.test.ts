@@ -28,6 +28,7 @@ describe('UpstashRoomStore', () => {
         status: 'active',
         createdAt: '2026-04-16T00:00:00.000Z',
         revealedAt: null,
+        timer: null,
       },
       votes: [],
       revision: 1,

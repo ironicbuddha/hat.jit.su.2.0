@@ -24,6 +24,7 @@ export class MemoryRoomStore implements RoomStore {
         status: 'active',
         createdAt: input.createdAt,
         revealedAt: null,
+        timer: null,
       },
       votes: [],
       revision: 1,
